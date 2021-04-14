@@ -63,4 +63,5 @@ class voc:
         return {
             "boxes": boxes,
             "im": im,
+            "class": classes,
         }
