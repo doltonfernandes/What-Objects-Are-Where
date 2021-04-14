@@ -1,33 +1,7 @@
-import cv2, torch
-from torchvision import models, transforms
+import cv2
 from PIL import Image
-
-def selectiveSearch(im):
-    """
-    returns the region proposals for the image
-    input: im - image
-    return: list of proposals
-    """
-    ss = cv2.ximgproc.segmentation.createSelectiveSearchSegmentation()
-    ss.setBaseImage(im)
-    ss.switchToSelectiveSearchFast()
-    rects = ss.process()
-    return rects
-
-def featureExtractor(im):
-    transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(227),
-        transforms.ToTensor(),
-        transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225]
-    )])
-    im = transform(im)
-    im = im.unsqueeze(0)
-    alexnet = models.alexnet(pretrained=True)
-    alexnet.eval()
-    return alexnet(im)
+from selSearch import *
+from feature import *
 
 def add_margin(pil_img, top, right, bottom, left, color):
     width, height = pil_img.size
