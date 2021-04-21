@@ -35,12 +35,12 @@ class voc:
         self.ext = ".jpg"
         # self._image_index = self._load_image_set_index()
         self.pathAnnot = root + "./Annotations/"
-        self.annots = os.lisdir(self.pathAnnot)
+        self.annots = os.listdir(self.pathAnnot)
 
     def __len__(self):
         return len(self.annots)
 
-    def __get__(self, index):
+    def __getitem__(self, index):
         filename = self.pathAnnot + self.annots[index]
         tree = ET.parse(filename)
         objs = tree.findall("object")
@@ -54,7 +54,7 @@ class voc:
             y1 = float(bbox.find("ymin").text) - 1
             x2 = float(bbox.find("xmax").text) - 1
             y2 = float(bbox.find("ymax").text) - 1
-            cls = self._class_to_ind[obj.find("name").text.lower().strip()]
+            cls = self.class_map[obj.find("name").text.lower().strip()]
             boxes[ix, :] = [x1, y1, x2, y2]
             classes[ix] = cls
         imgpath = tree.find("filename").text
@@ -65,3 +65,10 @@ class voc:
             "im": im,
             "class": classes,
         }
+
+if __name__ == "__main__":
+    print("here")
+    path = "/ssd_scratch/cvit/george/VOC2007/"
+    obj = voc(path)
+    print(obj[0])
+
