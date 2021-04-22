@@ -2,6 +2,7 @@ import cv2
 from PIL import Image
 from selSearch import *
 from feature import *
+from utils import *
 
 def add_margin(pil_img, top, right, bottom, left, color):
     width, height = pil_img.size
@@ -10,6 +11,32 @@ def add_margin(pil_img, top, right, bottom, left, color):
     result = Image.new(pil_img.mode, (new_width, new_height), color)
     result.paste(pil_img, (left, top))
     return result
+
+train_im = []
+train_labels = []
+
+def region_warpping(data, regions):
+    """
+    inputs:
+        data - instance of voc dataloader class
+        regions - region proposals from selective search
+    function:
+        checks the iou value of all the regional proposals with the actual ground truths
+    """
+    image = data['im']
+    gtbbs = data['boxes']
+    gtclasses = data['classes']
+
+    for index, region in enumerate(regions):
+        for idx, gtbb in enumerate(gtbbs):
+            x, y, w, h = region
+            iou = get_iou([x, y, x + w, y + h], gtbb)
+
+            if iou > 0.70:
+                temp_im = image[y: y + h, x: x + w]
+                resized_im = cv2.resize(temp_im, (224, 224), interpolation=cv2.INTER_AREA)
+                train_im.append(resized_im)
+                train.labels.append(gtclasses[idx])
 
 if __name__ == "__main__":
     f = "../img/1.jpg"
