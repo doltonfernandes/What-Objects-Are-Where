@@ -51,7 +51,6 @@ if __name__ == "__main__":
         im = cv2.imread(pathh)
         rects = selectiveSearch(im)
         region_warpping(imageData, rects)
-        break
 
     for i in tqdm.tqdm(train_im):
         f = Image.fromarray(np.uint8(i))
