@@ -9,6 +9,14 @@ import tqdm
 import pickle
 
 def add_margin(pil_img, top, right, bottom, left, color):
+    """
+    - pads the input image
+    inputs:
+        pil_image - original image
+        top, right, bottom, left - padding values in four directions
+        color - color to be used for the resulting image
+    return: padded image
+    """
     width, height = pil_img.size
     new_width = width + right + left
     new_height = height + top + bottom
@@ -22,11 +30,11 @@ train_labels = []
 
 def region_warpping(data, regions):
     """
+    - checks the iou value of all the regional proposals with the actual ground truths.
+    - assigns a class to regions that have an iou value greater than 0.7 with the ground truths.
     inputs:
         data - instance of voc dataloader class
         regions - region proposals from selective search
-    function:
-        checks the iou value of all the regional proposals with the actual ground truths
     """
     image = data['im']
     gtbbs = data['boxes']
@@ -45,6 +53,7 @@ def region_warpping(data, regions):
 
 if __name__ == "__main__":
     dataLoader = voc('./../../VOC2007')
+
     for i in tqdm.tqdm(range(dataLoader.__len__())):
         imageData = dataLoader.__getitem__(i)
         pathh = imageData['path']
@@ -62,10 +71,10 @@ if __name__ == "__main__":
         'train_features': train_features,
         'train_labels': train_labels
     }
+
     with open('data.pkl', 'wb') as f:
         pickle.dump(save_data, f, pickle.HIGHEST_PROTOCOL)
 
     #with open('data.pkl', 'rb') as f:
     #    data = pickle.load(f)
-
     #print(data)
