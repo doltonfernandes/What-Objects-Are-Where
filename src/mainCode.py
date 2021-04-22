@@ -3,6 +3,10 @@ from PIL import Image
 from selSearch import *
 from feature import *
 from utils import *
+from dataload import *
+import numpy as np
+import tqdm
+import pickle
 
 def add_margin(pil_img, top, right, bottom, left, color):
     width, height = pil_img.size
@@ -13,6 +17,7 @@ def add_margin(pil_img, top, right, bottom, left, color):
     return result
 
 train_im = []
+train_features = []
 train_labels = []
 
 def region_warpping(data, regions):
@@ -25,35 +30,43 @@ def region_warpping(data, regions):
     """
     image = data['im']
     gtbbs = data['boxes']
-    gtclasses = data['classes']
+    gtclasses = data['class']
 
     for index, region in enumerate(regions):
         for idx, gtbb in enumerate(gtbbs):
             x, y, w, h = region
-            iou = get_iou([x, y, x + w, y + h], gtbb)
+            iou = getIoU([x, y, x + w, y + h], gtbb)
 
             if iou > 0.70:
                 temp_im = image[y: y + h, x: x + w]
-                resized_im = cv2.resize(temp_im, (224, 224), interpolation=cv2.INTER_AREA)
+                resized_im = cv2.resize(temp_im, (227, 227), interpolation=cv2.INTER_AREA)
                 train_im.append(resized_im)
-                train.labels.append(gtclasses[idx])
+                train_labels.append(gtclasses[idx])
 
 if __name__ == "__main__":
-    f = "../img/1.jpg"
-    im = cv2.imread(f)
-    rects = selectiveSearch(im)
-    print("No. of proposals:", len(rects))
-    for rect in rects:
-        x, y, w, h = rect
-        cv2.rectangle(im, (x, y), (x + w, y + h), (0, 255, 0), 1, cv2.LINE_AA)
+    dataLoader = voc('./../../VOC2007')
+    for i in tqdm.tqdm(range(dataLoader.__len__())):
+        imageData = dataLoader.__getitem__(i)
+        pathh = imageData['path']
+        im = cv2.imread(pathh)
+        rects = selectiveSearch(im)
+        region_warpping(imageData, rects)
+        break
 
-    cv2.imwrite("../img/1_sel.jpg", im)
+    for i in tqdm.tqdm(train_im):
+        f = Image.fromarray(np.uint8(i))
+        f = featureExtractor(f)
+        train_features.append(f)
 
-    # Get image in bounding box
-    im = Image.open(f)
-    im = im.crop((50, 10, 450, 400))
-    im.save('../img/1_bounding.jpg')
+    save_data = {
+        'train_im': train_im,
+        'train_features': train_features,
+        'train_labels': train_labels
+    }
+    with open('data.pkl', 'wb') as f:
+        pickle.dump(save_data, f, pickle.HIGHEST_PROTOCOL)
 
-    # Add p=16 pixels on border
-    im = add_margin(im, 16, 16, 16, 16, (0, 0, 0))
-    im = featureExtractor(im)
+    #with open('data.pkl', 'rb') as f:
+    #    data = pickle.load(f)
+
+    #print(data)

@@ -1,5 +1,9 @@
+import numpy as np
+
 def getIoU(boxA, boxB):
     # boxX = [0., 0., 10., 10.]
+    boxA = np.array(boxA).astype(np.int)
+    boxB = np.array(boxB).astype(np.int)
     xA = max(boxA[0], boxB[0])
     yA = max(boxA[1], boxB[1])
     xB = min(boxA[2], boxB[2])
@@ -11,6 +15,8 @@ def getIoU(boxA, boxB):
         return 0
     # compute the area of both the prediction and ground-truth
     # rectangles
+    #print(boxA[2], boxA[0], boxA[3], boxA[1])
+    #print(boxB[2], boxB[0], boxB[3], boxB[1])
     boxAArea = abs((boxA[2] - boxA[0]) * (boxA[3] - boxA[1]))
     boxBArea = abs((boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
 

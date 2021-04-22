@@ -34,7 +34,7 @@ class voc:
         self.class_map = dict(zip(self.classes, range(self.num_classes)))
         self.ext = ".jpg"
         # self._image_index = self._load_image_set_index()
-        self.pathAnnot = root + "./Annotations/"
+        self.pathAnnot = root + "/Annotations/"
         self.annots = os.listdir(self.pathAnnot)
 
     def __len__(self):
@@ -61,6 +61,7 @@ class voc:
         impath = self.root + "/JPEGImages/" + imgpath
         im = cv2.imread(impath)
         return {
+            "path": impath,
             "boxes": boxes,
             "im": im,
             "class": classes,
@@ -68,7 +69,7 @@ class voc:
 
 if __name__ == "__main__":
     print("here")
-    path = "/ssd_scratch/cvit/george/VOC2007/"
+    path = "./../../VOC2007"
     obj = voc(path)
     print(obj[0])
 
