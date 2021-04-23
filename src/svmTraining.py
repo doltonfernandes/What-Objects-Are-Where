@@ -3,6 +3,16 @@ import torch.optim as optim
 from torch.autograd import Variable
 
 from svmModel import SVM
+from sklearn.model_selection import train_test_split
+
+def trainClassifier(X, Y, val_split=0.20, num_classes=20):
+    train_x, train_y = [], []
+    val_x, val_y = [], []
+
+    train_x, val_x, train_y, val_y = train_test_split(X, Y, stratify=Y, test_size=val_split)
+
+    trainSVM(train_x, val_x, train_y, val_y)
+    return
 
 def trainSVM(X, Y):
     learning_rate = 0.1
@@ -36,7 +46,7 @@ def trainSVM(X, Y):
 
             loss = torch.mean(torch.clamp(1 - output * y, min = 0))
             loss += c * (weight.t() @ weight) / 2.0
-            
+
             loss.backward()
             optimizer.step()
 
