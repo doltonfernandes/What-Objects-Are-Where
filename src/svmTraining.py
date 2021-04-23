@@ -37,6 +37,7 @@ def trainSVM(X, Y, val_X, val_Y):
         sum_loss = 0
         perm = torch.randperm(n)
 
+        train_correct = 0
         for i in range(0, n, batch_size):
             x = X[perm[i: i + batch_size]]
             y = Y[perm[i: i + batch_size]]
@@ -55,9 +56,11 @@ def trainSVM(X, Y, val_X, val_Y):
             optimizer.step()
 
             sum_loss += float(loss)
+
+            pred = output == y
+            train_correct += pred.sum()
         
         val_correct = 0
-
         for i in range(0, val_n):
             x = val_X[perm[i]]
             y = val_Y[perm[i]]
@@ -70,6 +73,6 @@ def trainSVM(X, Y, val_X, val_Y):
             if pred == y:
                 val_correct += 1
 
-        print("Epoch: {}, Validation Accuracy: {}".format(val_correct / val_n))
+        print("Epoch: {}, Train Accuracy: {}, Validation Accuracy: {}".format(epoch, train_correct / n, val_correct / val_n))
         
         print("Epoch: {}, Loss: {}".format(epoch, sum_loss / n))
