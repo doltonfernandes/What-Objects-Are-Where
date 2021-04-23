@@ -11,10 +11,10 @@ def trainClassifier(X, Y, val_split=0.20, num_classes=20):
 
     train_x, val_x, train_y, val_y = train_test_split(X, Y, stratify=Y, test_size=val_split)
 
-    trainSVM(train_x, val_x, train_y, val_y)
+    trainSVM(train_x, train_y, val_x, val_y)
     return
 
-def trainSVM(X, Y):
+def trainSVM(X, Y, val_X, val_Y):
     learning_rate = 0.1
     epochs = 10
     batch_size = 1
@@ -23,6 +23,10 @@ def trainSVM(X, Y):
     X = torch.FloatTensor(X)
     Y = torch.FloatTensor(Y)
     n = len(Y)
+
+    val_X = torch.FloatTensor(val_X)
+    val_Y = torch.FloatTensor(val_Y)
+    val_n = len(val_Y)
 
     model = SVM()
     optimizer = optim.SGD(model.parameters(), lr=learning_rate)
