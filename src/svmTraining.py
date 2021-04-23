@@ -3,6 +3,10 @@ import torch.optim as optim
 from torch.autograd import Variable
 
 from svmModel import SVM
+
+import re
+from PIL import Image
+from os import listdir
 from sklearn.model_selection import train_test_split
 
 def trainClassifier(X, Y, val_split=0.20, num_classes=20):
@@ -76,3 +80,17 @@ def trainSVM(X, Y, val_X, val_Y):
         print("Epoch: {}, Train Accuracy: {}, Validation Accuracy: {}".format(epoch, train_correct / n, val_correct / val_n))
         
         print("Epoch: {}, Loss: {}".format(epoch, sum_loss / n))
+
+if __name__ == "__main__":
+    train_path = '../../features/'
+    
+    images, classes = [], []
+
+    for f in listdir(train_path):
+        cls = re.search('_(.+?).pt', f).group(1)
+        classes.append(cls)
+        
+        im = torch.load(train_path + f, map_location=torch.device('cpu'))
+        images.append(im)
+
+    print(len(images), len(classes))  
