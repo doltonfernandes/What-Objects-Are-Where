@@ -55,5 +55,21 @@ def trainSVM(X, Y, val_X, val_Y):
             optimizer.step()
 
             sum_loss += float(loss)
+        
+        val_correct = 0
 
+        for i in range(0, val_n):
+            x = val_X[perm[i]]
+            y = val_Y[perm[i]]
+
+            x = Variable(x)
+            y = Variable(y)
+
+            pred = model(x)
+
+            if pred == y:
+                val_correct += 1
+
+        print("Epoch: {}, Validation Accuracy: {}".format(val_correct / val_n))
+        
         print("Epoch: {}, Loss: {}".format(epoch, sum_loss / n))
