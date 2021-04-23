@@ -1,4 +1,6 @@
 import cv2
+from os import path
+import torch
 from PIL import Image
 from selSearch import *
 from feature import *
@@ -44,29 +46,34 @@ def region_warpping(data, regions):
                 train_labels.append(gtclasses[idx])
 
 if __name__ == "__main__":
-    dataLoader = voc('./../../VOC2007')
-    for i in tqdm.tqdm(range(dataLoader.__len__())):
-        imageData = dataLoader.__getitem__(i)
-        pathh = imageData['path']
-        im = cv2.imread(pathh)
-        rects = selectiveSearch(im)
-        region_warpping(imageData, rects)
-        break
+    if not path.exists("images.pkl"):
+        dataLoader = voc('./../../VOC2007')
+        for i in tqdm.tqdm(range(dataLoader.__len__())):
+            imageData = dataLoader.__getitem__(i)
+            pathh = imageData['path']
+            im = cv2.imread(pathh)
+            rects = selectiveSearch(im)
+            region_warpping(imageData, rects)
 
-    for i in tqdm.tqdm(train_im):
+        save_data = {
+            'train_im': train_im,
+            'train_features': train_features,
+            'train_labels': train_labels
+        }
+
+        with open('data.pkl', 'wb') as f:
+            pickle.dump(save_data, f, pickle.HIGHEST_PROTOCOL)
+    else:
+        print('Loading saved data...')
+        with open('images.pkl', 'rb') as f:
+            data = pickle.load(f)
+
+        train_im = data['train_im']
+        train_features = data['train_features']
+        train_labels = data['train_labels']
+
+    for idx, i in enumerate(train_im):
         f = Image.fromarray(np.uint8(i))
         f = featureExtractor(f)
-        train_features.append(f)
-
-    save_data = {
-        'train_im': train_im,
-        'train_features': train_features,
-        'train_labels': train_labels
-    }
-    with open('data.pkl', 'wb') as f:
-        pickle.dump(save_data, f, pickle.HIGHEST_PROTOCOL)
-
-    #with open('data.pkl', 'rb') as f:
-    #    data = pickle.load(f)
-
-    #print(data)
+        torch.save(f, 'features/' + str(idx) + '_' + str(train_labels[idx]) + '.pt')
+        print(idx, '/', len(train_im))
