@@ -51,10 +51,10 @@ def trainSVM(X, Y, val_X, val_Y):
 
             optimizer.zero_grad()
             output = model(x).squeeze()
-            weight = model.weight.squeeze()
+            #weight = model.weight.squeeze()
 
             loss = torch.mean(torch.clamp(1 - output * y, min = 0))
-            loss += c * (weight.t() @ weight) / 2.0
+            #loss += c * (weight.t() @ weight) / 2.0
 
             loss.backward()
             optimizer.step()
@@ -63,7 +63,10 @@ def trainSVM(X, Y, val_X, val_Y):
 
             pred = output == y
             train_correct += pred.sum()
+
+            print('output: {}, y: {}, pred: {}'.format(output, y, pred))
         
+        perm = torch.randperm(val_n)
         val_correct = 0
         for i in range(0, val_n):
             x = val_X[perm[i]]
@@ -77,6 +80,9 @@ def trainSVM(X, Y, val_X, val_Y):
             if pred == y:
                 val_correct += 1
 
+            print('pred: {}, y: {}'.format(pred, y))
+
+
         print("Epoch: {}, Train Accuracy: {}, Validation Accuracy: {}".format(epoch, train_correct / n, val_correct / val_n))
         
         print("Epoch: {}, Loss: {}".format(epoch, sum_loss / n))
@@ -88,9 +94,12 @@ if __name__ == "__main__":
 
     for f in listdir(train_path):
         cls = re.search('_(.+?).pt', f).group(1)
-        classes.append(cls)
+        classes.append(int(cls))
         
         im = torch.load(train_path + f, map_location=torch.device('cpu'))
-        images.append(im)
+        images.append(im.detach().numpy()[0])
 
-    print(len(images), len(classes))  
+    #print(len(images), len(classes)) 
+    #print(images[0].dtype, classes[0].dtype)
+    #print(images[0], classes[0])
+    trainClassifier(images, classes) 
