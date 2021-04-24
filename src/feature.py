@@ -1,6 +1,9 @@
+import torch.nn as nn
 from torchvision import transforms, models
 
 alexnet = models.alexnet(pretrained=True)
+alexnet_fc7 = nn.Sequential(*list(alexnet.classifier.children())[:-1])
+alexnet.classifier = alexnet_fc7
 alexnet.cuda()
 alexnet.eval()
 
@@ -16,3 +19,4 @@ def featureExtractor(im):
     im = transform(im).cuda()
     im = im.unsqueeze(0)
     return alexnet(im)
+
