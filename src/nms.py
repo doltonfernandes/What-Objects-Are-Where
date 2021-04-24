@@ -1,34 +1,36 @@
 import numpy as np
+from copy import deepcopy
 
 
-def nms_detections(dets, overlap=0.3):
+def nms_detections(dets_in, scores, overlap=0.1):
+    dets = deepcopy(dets_in)
+    dets = np.array(dets)
+    scores = np.array(scores)
+    dets[:, 2] += dets[:, 0]
+    dets[:, 3] += dets[:, 1]
     x1 = dets[:, 0]
     y1 = dets[:, 1]
     x2 = dets[:, 2]
     y2 = dets[:, 3]
-    ind = np.argsort(dets[:, 4])
 
-    w = x2 - x1
-    h = y2 - y1
-    area = (w * h).astype(float)
+    areas = (x2 - x1 + 1) * (y2 - y1 + 1)
+    order = scores.argsort()[::-1]
 
-    pick = []
-    while len(ind) > 0:
-        i = ind[-1]
-        pick.append(i)
-        ind = ind[:-1]
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
 
-        xx1 = np.maximum(x1[i], x1[ind])
-        yy1 = np.maximum(y1[i], y1[ind])
-        xx2 = np.minimum(x2[i], x2[ind])
-        yy2 = np.minimum(y2[i], y2[ind])
+        w = np.maximum(0.0, xx2 - xx1 + 1)
+        h = np.maximum(0.0, yy2 - yy1 + 1)
+        inter = w * h
+        ovr = inter / (areas[i] + areas[order[1:]] - inter)
 
-        w = np.maximum(0., xx2 - xx1)
-        h = np.maximum(0., yy2 - yy1)
+        inds = np.where(ovr <= overlap)[0]
+        order = order[inds + 1]
 
-        wh = w * h
-        o = wh / (area[i] + area[ind] - wh)
-
-        ind = ind[np.nonzero(o <= overlap)[0]]
-
-    return dets[pick, :]
+    return np.array(keep)

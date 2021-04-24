@@ -18,10 +18,10 @@ def trainClassifier(X, Y, val_split=0.80, num_classes=20):
 
     train_x, val_x, train_y, val_y = train_test_split(X, Y, stratify=Y, test_size=val_split)
 
-    clf = make_pipeline(StandardScaler(), SVC(gamma='auto', verbose=True))
+    clf = make_pipeline(StandardScaler(), SVC(gamma='auto', verbose=True, probability=True))
     clf.fit(train_x, train_y)
     
-    filename = 'svmmodel_pascalvoc.sav'
+    filename = 'svmmodel_pascalvoc_alexnet_noft_prob.sav'
     pickle.dump(clf, open(filename, 'wb'))
 
     pred = clf.predict(train_x)
@@ -43,12 +43,14 @@ def trainClassifier(X, Y, val_split=0.80, num_classes=20):
     print("Validation classification accuracy: {}".format(correct / len(val_y)))
 
 if __name__ == "__main__":
-    train_path = '../../features/'
+    train_path = '../../newFeaturesNoFinTuneAlexnet/newFeatures/'
     
     images, classes = [], []
 
     for f in listdir(train_path):
-        cls = re.search('_(.+?).pt', f).group(1)
+        #cls = re.search('_(.+?).pt', f).group(1)
+        cls = f.split('_')[5].split('.')[0]
+        #print(cls)
         classes.append(int(cls))
         
         im = torch.load(train_path + f, map_location=torch.device('cpu'))
